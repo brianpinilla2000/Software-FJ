@@ -25,7 +25,29 @@ def mostrar_presentacion():
     print("=" * 65)
 
 
+# ============================================
+# FORMATEAR RESULTADOS
+# ============================================
+
+def formatear_resultado(resultado):
+
+    # Mostrar la descripcion de los objetos.
+    if hasattr(resultado, "describir"):
+        return resultado.describir()
+
+    # Mostrar los valores numericos como moneda.
+    if isinstance(resultado, (int, float)) and not isinstance(resultado, bool):
+        return f"${resultado:,.2f}"
+
+    return resultado
+
+
+# ============================================
+# EJECUTAR OPERACIONES
+# ============================================
+
 def ejecutar_operacion(nombre, funcion):
+
     print("\n" + "-" * 65)
     print(nombre)
     print("-" * 65)
@@ -34,21 +56,27 @@ def ejecutar_operacion(nombre, funcion):
         resultado = funcion()
 
         if resultado is not None:
-            print("Resultado:", resultado)
+            print("Resultado:", formatear_resultado(resultado))
 
         print("Operacion ejecutada correctamente.")
         return resultado
 
     except Exception as error:
         print("Operacion controlada:", error)
+
         registrar_error(
             f"Operacion '{nombre}' controlada: {error}"
         )
+
         return None
 
     finally:
         print("Fin de la operacion.")
 
+
+# ============================================
+# EJECUCION PRINCIPAL
+# ============================================
 
 def ejecutar():
 
@@ -65,7 +93,7 @@ def ejecutar():
         lambda: Cliente(
             "C001",
             "Brayan Pinilla",
-            "brayanpinilla2000@gmail.com",
+            "brianpinilla2000@gmail.com",
             "3217568808"
         )
     )
@@ -108,6 +136,7 @@ def ejecutar():
     )
 
     for servicio in (sala1, equipo1, asesoria1):
+
         if servicio is not None:
             ejecutar_operacion(
                 f"REGISTRO DEL SERVICIO {servicio.identificador}",
@@ -323,6 +352,7 @@ def ejecutar():
     # ========================================
 
     if cliente1 is not None:
+
         cliente_duplicado = ejecutar_operacion(
             "CREACION DE CLIENTE DUPLICADO",
             lambda: Cliente(
@@ -360,13 +390,19 @@ def ejecutar():
     print("=" * 65)
 
 
+# ============================================
+# PUNTO DE ENTRADA DEL PROGRAMA
+# ============================================
+
 if __name__ == "__main__":
 
     try:
         ejecutar()
 
     except Exception as error:
+
         print("Error general del sistema:", error)
+
         registrar_error(
             f"Error general durante la ejecucion: {error}"
         )
