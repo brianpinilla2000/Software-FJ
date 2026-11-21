@@ -16,6 +16,10 @@ from registros import (
 )
 
 
+# ============================================
+# CLASE RESERVA
+# ============================================
+
 class Reserva(Entidad):
 
     def __init__(
@@ -31,26 +35,31 @@ class Reserva(Entidad):
         try:
             super().__init__(identificador)
 
+            # Validamos el cliente.
             if cliente is None:
                 raise DatosInvalidosError(
                     "La reserva debe tener un cliente."
                 )
 
+            # Validamos el servicio.
             if servicio is None:
                 raise DatosInvalidosError(
                     "La reserva debe tener un servicio."
                 )
 
+            # Validamos la fecha.
             if not isinstance(fecha, str) or not fecha.strip():
                 raise DatosInvalidosError(
                     "La fecha es obligatoria."
                 )
 
+            # Validamos la hora.
             if not isinstance(hora, str) or not hora.strip():
                 raise DatosInvalidosError(
                     "La hora es obligatoria."
                 )
 
+            # Comprobamos los formatos de fecha y hora.
             try:
                 datetime.strptime(fecha, "%Y-%m-%d")
                 datetime.strptime(hora, "%H:%M")
@@ -60,6 +69,7 @@ class Reserva(Entidad):
                     "La fecha o la hora tienen un formato invalido."
                 ) from error
 
+            # Validamos la duración.
             if (
                 isinstance(duracion, bool)
                 or not isinstance(duracion, int)
@@ -69,40 +79,77 @@ class Reserva(Entidad):
                     "La duracion debe ser un numero entero mayor que cero."
                 )
 
-            self.cliente = cliente
-            self.servicio = servicio
-            self.fecha = fecha
-            self.hora = hora
-            self.duracion = duracion
-            self.estado = "Pendiente"
+            # Guardamos los datos mediante atributos encapsulados.
+            self._cliente = cliente
+            self._servicio = servicio
+            self._fecha = fecha
+            self._hora = hora
+            self._duracion = duracion
+            self._estado = "Pendiente"
 
             registrar_evento(
                 f"Reserva {self.identificador} creada correctamente."
             )
 
         except (DatosInvalidosError, ValueError) as error:
+
             registrar_error(
                 f"Error al crear reserva: {error}"
             )
+
             raise
 
         except Exception as error:
+
             registrar_error(
                 f"Error inesperado al crear reserva: {error}"
             )
+
             raise ReservaError(
                 "No fue posible crear la reserva."
             ) from error
 
+    # ============================================
+    # PROPIEDADES PARA CONSULTAR LOS ATRIBUTOS
+    # ============================================
+
+    @property
+    def cliente(self):
+        return self._cliente
+
+    @property
+    def servicio(self):
+        return self._servicio
+
+    @property
+    def fecha(self):
+        return self._fecha
+
+    @property
+    def hora(self):
+        return self._hora
+
+    @property
+    def duracion(self):
+        return self._duracion
+
+    @property
+    def estado(self):
+        return self._estado
+
+    # ============================================
+    # CONFIRMAR RESERVA
+    # ============================================
+
     def confirmar(self):
 
         try:
-            if self.estado != "Pendiente":
+            if self._estado != "Pendiente":
                 raise OperacionNoPermitidaError(
                     "Solo se pueden confirmar reservas pendientes."
                 )
 
-            self.estado = "Confirmada"
+            self._estado = "Confirmada"
 
             registrar_evento(
                 f"Reserva {self.identificador} confirmada."
@@ -111,20 +158,26 @@ class Reserva(Entidad):
             return "Reserva confirmada correctamente."
 
         except OperacionNoPermitidaError as error:
+
             registrar_error(
                 f"Error al confirmar reserva: {error}"
             )
+
             raise
+
+    # ============================================
+    # CANCELAR RESERVA
+    # ============================================
 
     def cancelar(self):
 
         try:
-            if self.estado not in ("Pendiente", "Confirmada"):
+            if self._estado not in ("Pendiente", "Confirmada"):
                 raise OperacionNoPermitidaError(
                     "No se puede cancelar una reserva procesada o cancelada."
                 )
 
-            self.estado = "Cancelada"
+            self._estado = "Cancelada"
 
             registrar_evento(
                 f"Reserva {self.identificador} cancelada."
@@ -133,24 +186,30 @@ class Reserva(Entidad):
             return "Reserva cancelada correctamente."
 
         except OperacionNoPermitidaError as error:
+
             registrar_error(
                 f"Error al cancelar reserva: {error}"
             )
+
             raise
+
+    # ============================================
+    # PROCESAR RESERVA
+    # ============================================
 
     def procesar(self):
 
         try:
-            if self.estado != "Confirmada":
+            if self._estado != "Confirmada":
                 raise OperacionNoPermitidaError(
                     "La reserva debe estar confirmada para procesarse."
                 )
 
-            costo = self.servicio.calcular_costo(
-                cantidad=self.duracion
+            costo = self._servicio.calcular_costo(
+                cantidad=self._duracion
             )
 
-            self.estado = "Procesada"
+            self._estado = "Procesada"
 
             registrar_evento(
                 f"Reserva {self.identificador} procesada. "
@@ -160,18 +219,26 @@ class Reserva(Entidad):
             return costo
 
         except OperacionNoPermitidaError as error:
+
             registrar_error(
                 f"Error al procesar reserva: {error}"
             )
+
             raise
 
         except Exception as error:
+
             registrar_error(
                 f"Error inesperado al procesar reserva: {error}"
             )
+
             raise ReservaError(
                 "No fue posible procesar la reserva."
             ) from error
+
+    # ============================================
+    # DESCRIBIR RESERVA
+    # ============================================
 
     def describir(self):
 

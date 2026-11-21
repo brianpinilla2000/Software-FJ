@@ -46,13 +46,13 @@ class Servicio(Entidad, ABC):
                     "La tarifa debe ser un numero mayor que cero."
                 )
 
-            # Guardamos los datos del servicio.
-            self.nombre = nombre.strip()
-            self.tarifa = float(tarifa)
+            # Guardamos los datos con atributos encapsulados.
+            self._nombre = nombre.strip()
+            self._tarifa = float(tarifa)
 
             # Registramos el servicio creado.
             registrar_evento(
-                f"Servicio creado correctamente: {self.nombre}"
+                f"Servicio creado correctamente: {self._nombre}"
             )
 
         except DatosInvalidosError as error:
@@ -73,12 +73,26 @@ class Servicio(Entidad, ABC):
                 "No fue posible crear el servicio."
             ) from error
 
-    # Método abstracto para validar parámetros.
+    # ============================================
+    # PROPIEDADES PARA CONSULTAR LOS ATRIBUTOS
+    # ============================================
+
+    @property
+    def nombre(self):
+        return self._nombre
+
+    @property
+    def tarifa(self):
+        return self._tarifa
+
+    # ============================================
+    # METODOS ABSTRACTOS
+    # ============================================
+
     @abstractmethod
     def validar_parametros(self):
         pass
 
-    # Método abstracto para calcular costos.
     @abstractmethod
     def calcular_costo(
         self,
@@ -88,7 +102,10 @@ class Servicio(Entidad, ABC):
     ):
         pass
 
-    # Método auxiliar para calcular el costo final.
+    # ============================================
+    # METODO PARA CALCULAR EL COSTO FINAL
+    # ============================================
+
     def _calcular_total(self, cantidad, impuesto, descuento):
 
         self.validar_parametros()
@@ -274,3 +291,4 @@ class Asesoria(Servicio):
             f"Asesoria: {self.nombre} | "
             f"Tarifa: ${self.tarifa:,.2f}"
         )
+
